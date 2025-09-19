@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kalkulator Kwartil, Desil, Persentil Modern</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+  body {
+    font-family: 'Roboto', sans-serif;
+    margin:20px;
+    background: linear-gradient(135deg, #c2e7ff, #ffc2e7);
+    color: #333;
+  }
+  h2,h3{
+    text-align:center;
+    color:#1a1a2e;
+  }
+  .container {
+    max-width:950px;
+    margin:auto;
+    background:#ffffffee;
+    padding:25px;
+    border-radius:15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    border: 2px solid #ff6fb5;
+  }
+  label {
+    font-weight:bold;
+    display:block;
+    margin-top:15px;
+    color:#1a1a2e;
+  }
+  input, button {
+    width:100%;
+    padding:10px;
+    margin-top:5px;
+    margin-bottom:20px;
+    border-radius:8px;
+    border:2px solid #1a1a2e;
+    box-sizing:border-box;
+    font-size:14px;
+  }
+  input:focus{
+    outline:none;
+    border-color:#ff6fb5;
+    box-shadow: 0 0 10px #ff6fb5;
+  }
+  button {
+    background:#1a1a2e;
+    color:white;
+    cursor:pointer;
+    font-weight:bold;
+    transition: all 0.3s ease;
+  }
+  button:hover {
+    background:#ff6fb5;
+    transform: scale(1.05);
+  }
+  .result {
+    margin-top:25px;
+    padding:20px;
+    background:#e0f7ff;
+    border-radius:12px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    overflow-x:auto;
+  }
+  table {
+    border-collapse: collapse;
+    width:100%;
+    min-width:650px;
+    margin-top:15px;
+  }
+  th, td {
+    border:1px solid #1a1a2e;
+    padding:10px;
+    text-align:center;
+    vertical-align:middle;
+    transition: all 0.2s ease;
+  }
+  th {
+    background:#1a1a2e;
+    color:#ff6fb5;
+    font-weight:bold;
+  }
+  td:hover{
+    background: #ffd6f0;
+    cursor:pointer;
+  }
+  .langkah {
+    background:#ffe0f0;
+    padding:15px;
+    border-radius:10px;
+    margin-top:15px;
+    font-size:14px;
+    white-space:pre-wrap;
+    border-left: 4px solid #1a1a2e;
+  }
+  @media (max-width:768px){
+    body{margin:10px;}
+    .container{padding:20px;}
+    h2{font-size:22px;}
+    h3{font-size:18px;}
+    input, button{padding:8px;}
+    th, td{padding:6px;font-size:13px;}
+    .langkah{font-size:12px;}
+  }
+  @media (max-width:480px){
+    table{min-width:400px;}
+    th, td{padding:4px;font-size:11px;}
+    .langkah{font-size:11px;}
+  }
+</style>
+</head>
+<body>
+<div class="container">
+<h2>Kalkulator Kwartil, Desil, Persentil</h2>
+
+<div class="penjelasan">
+<h3>Instruksi Penggunaan</h3>
+<ol>
+<li>Masukkan data angka, pisahkan dengan koma. Contoh: 5,7,8,12,13,15,18,21,23,27</li>
+<li>Tekan tombol "Hitung Semua". Data otomatis diurutkan.</li>
+<li>Hasil menampilkan Kwartil, Desil, Persentil, posisi, nilai, dan langkah perhitungan detail langsung.</li>
+</ol>
+</div>
+
+<label>Masukkan Data:</label>
+<input type="text" id="dataInput" placeholder="Contoh: 5,7,8,12,13,15,18,21,23,27">
+
+<button onclick="hitungSemua()">Hitung Semua</button>
+
+<div class="result" id="output"></div>
+</div>
+
+<script>
+function hitungSemua() {
+  let dataInput = document.getElementById("dataInput").value;
+  if(!dataInput){ document.getElementById("output").innerText="⚠️ Masukkan data."; return; }
+
+  let data = dataInput.split(",").map(x=>parseFloat(x.trim())).filter(x=>!isNaN(x)).sort((a,b)=>a-b);
+  let n = data.length;
+  if(n===0){ document.getElementById("output").innerText="⚠️ Data tidak valid."; return; }
+
+  function cariNilai(pos){
+    let idx = Math.floor(pos);
+    let frac = pos - idx;
+    if(idx<=0) return {nilai:data[0], langkah:`Posisi <1 → ambil nilai terkecil = ${data[0]}`};
+    if(idx>=n) return {nilai:data[n-1], langkah:`Posisi >= n → ambil nilai terbesar = ${data[n-1]}`};
+    if(frac===0) return {nilai:data[idx-1], langkah:`Posisi bulat → ambil data ke-${idx} = ${data[idx-1]}`};
+    let xBawah=data[idx-1], xAtas=data[idx];
+    let nilai=xBawah + frac*(xAtas-xBawah);
+    let langkah=`Posisi pecahan → antara data ke-${idx} (${xBawah}) dan ke-${idx+1} (${xAtas})\n`;
+    langkah+=`Fraction = ${frac.toFixed(2)}\n`;
+    langkah+=`Nilai = ${xBawah} + ${frac.toFixed(2)} × (${xAtas}-${xBawah}) = ${nilai.toFixed(2)}`;
+    return {nilai:nilai, langkah:langkah};
+  }
+
+  function buatTabel(arr, judul){
+    let html=`<h3>${judul}</h3><div style="overflow-x:auto"><table><tr><th>Simbol</th><th>Posisi</th><th>Nilai</th><th>Langkah Perhitungan</th></tr>`;
+    arr.forEach(r=>{
+      html+=`<tr>
+        <td>${r.simbol}</td>
+        <td>${r.posisi.toFixed(2)}</td>
+        <td>${r.nilai.toFixed(2)}</td>
+        <td class="langkah">${r.langkah}</td>
+      </tr>`;
+    });
+    html+="</table></div>";
+    return html;
+  }
+
+  let kwartil=[], desil=[], persentil=[];
+  for(let k=1;k<=3;k++){ let pos=k*(n+1)/4; let res=cariNilai(pos); kwartil.push({simbol:`Q${k}`,posisi:pos,nilai:res.nilai,langkah:res.langkah}); }
+  for(let k=1;k<=9;k++){ let pos=k*(n+1)/10; let res=cariNilai(pos); desil.push({simbol:`D${k}`,posisi:pos,nilai:res.nilai,langkah:res.langkah}); }
+  for(let k of [10,25,50,75,90]){ let pos=k*(n+1)/100; let res=cariNilai(pos); persentil.push({simbol:`P${k}`,posisi:pos,nilai:res.nilai,langkah:res.langkah}); }
+
+  let langkahUmum=`Langkah Perhitungan Umum:
+1️⃣ Urutkan data → [${data.join(", ")}]
+2️⃣ Jumlah data (n) = ${n}
+3️⃣ Rumus posisi:
+   • Kwartil Qk = k*(n+1)/4
+   • Desil Dk = k*(n+1)/10
+   • Persentil Pk = k*(n+1)/100
+4️⃣ Tentukan posisi hasil rumus
+5️⃣ Jika posisi bulat → ambil langsung data
+   Jika pecahan → interpolasi antara 2 data terdekat`;
+
+  document.getElementById("output").innerHTML=`
+${buatTabel(kwartil,"Kwartil (Q1-Q3)")}
+${buatTabel(desil,"Desil (D1-D9)")}
+${buatTabel(persentil,"Persentil Penting (P10,P25,P50,P75,P90)")}
+<div class="langkah">${langkahUmum}</div>
+`;
+}
+</script>
+</body>
+</html>
